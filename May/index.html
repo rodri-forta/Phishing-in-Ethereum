@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PhishingFlow Analysis Report - phishing_analysis</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        
+            :root {
+              --background: #121212; --foreground: #EFEFF0; --card: #1C1C1E; --card-foreground: #E2E2E2;
+              --muted-foreground: #8A8A8C; --primary: #3B7CF5; --primary-foreground: #FFFFFF;
+              --border: #2E2E2F; --chart-1: #3B7CF5; --chart-2: #00B383;
+              --font-sans: 'Open Sans', sans-serif; --radius: 0.75rem;
+            }
+            body { background-color: var(--background); color: var(--foreground); font-family: var(--font-sans); margin: 0; scroll-behavior: smooth; }
+            .dashboard-container { display: flex; }
+            .sidebar { width: 220px; height: 100vh; background-color: var(--card); padding: 1.5rem; box-sizing: border-box; border-right: 1px solid var(--border); position: fixed; }
+            .sidebar-header h2 { margin: 0 0 0.5rem 0; font-size: 1.25rem; color: var(--primary); }
+            .sidebar-header .batch-name { margin: 0 0 2rem 0; font-size: 0.85rem; color: var(--muted-foreground); font-weight: 500; }
+            .sidebar-nav { list-style: none; padding: 0; margin-top: 2rem; }
+            .sidebar-nav li a { color: var(--muted-foreground); text-decoration: none; display: block; padding: 0.75rem 0.5rem; font-weight: 600; border-radius: 0.5rem; transition: all 0.2s; }
+            .sidebar-nav li a:hover, .sidebar-nav li a.active { color: var(--foreground); background-color: var(--border); }
+            .main-content { flex-grow: 1; margin-left: 260px; padding: 2rem; }
+            .main-header h1 { font-size: 2rem; margin: 0 0 2rem 0; }
+            .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem; }
+            .card { background-color: var(--card); padding: 1.5rem; border-radius: var(--radius); border: 1px solid var(--border); }
+            .kpi-card .kpi-label { color: var(--muted-foreground); font-size: 0.9rem; }
+            .kpi-card h3 { font-size: 2.25rem; margin: 0.5rem 0; color: var(--card-foreground); }
+            .section-header { display: flex; justify-content: space-between; align-items: center; margin: 3rem 0 1.5rem 0; }
+            .section-header h2 { margin: 0; }
+            .search-box { background-color: var(--border); border: 1px solid #444; color: var(--foreground); padding: 0.5rem 1rem; border-radius: 0.5rem; width: 250px; }
+            .chart-container-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; }
+            .chart-wrapper { position: relative; height: 280px; }
+            .table-container { max-height: 500px; overflow-y: auto; overflow-x: auto; }
+            table { width: 100%; border-collapse: collapse; min-width: 1200px; }
+            th, td { text-align: left; padding: 0.75rem; border-bottom: 1px solid var(--border); white-space: nowrap; font-size: 0.9rem; }
+            th { color: var(--muted-foreground); font-weight: 600; font-size: 0.8rem; text-transform: uppercase; cursor: pointer; position: sticky; top: 0; background-color: var(--card); }
+            th:hover { color: var(--foreground); }
+            tbody tr:hover { background-color: #2a2a2c; }
+            .contract-row { cursor: pointer; }
+            a { color: var(--primary); text-decoration: none; }
+            a:hover { text-decoration: underline; }
+            .modal-backdrop { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: none; justify-content: center; align-items: center; z-index: 1000;}
+            .modal-content { background: #242426; padding: 2rem; border-radius: var(--radius); width: 80%; max-width: 900px; border: 1px solid var(--border); max-height: 90vh; display: flex; flex-direction: column; }
+            .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 1rem; }
+            .modal-body { overflow-y: auto; margin-top: 1rem; }
+            .close-button { cursor: pointer; font-size: 1.5rem; color: var(--muted-foreground); }
+        
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <h2>PhishingFlow</h2>
+                <p class="batch-name">phishing_analysis</p>
+            </div>
+            <ul class="sidebar-nav">
+                <li><a href="#summary-section" class="active">Summary</a></li>
+                <li><a href="#time-analytics-section">Time Analytics</a></li>
+                <li><a href="#token-analytics-section">Token Analysis</a></li>
+                <li><a href="#contract-analytics-section">Contract Analysis</a></li>
+            </ul>
+        </nav>
+        <main class="main-content">
+            <header class="main-header">
+                <h1 id="report-title">Phishing Analysis Report</h1>
+            </header>
+            <section id="summary-section" class="kpi-grid">
+                <div class="card kpi-card">
+                    <span class="kpi-label">Total Value Stolen</span>
+                    <h3 id="kpi-value-stolen">$0</h3>
+                </div>
+                <div class="card kpi-card">
+                    <span class="kpi-label">Total ETH Stolen</span>
+                    <h3 id="kpi-eth-stolen">0</h3>
+                </div>
+                <div class="card kpi-card">
+                    <span class="kpi-label">Malicious Contracts</span>
+                    <h3 id="kpi-contracts">0</h3>
+                </div>
+                <div class="card kpi-card">
+                    <span class="kpi-label">Unique Tokens Drained</span>
+                    <h3 id="kpi-tokens">0</h3>
+                </div>
+            </section>
+            <section id="time-analytics-section">
+                <div class="section-header">
+                    <h2>Time-based Activity</h2>
+                </div>
+                <div class="chart-container-grid">
+                    <div class="card">
+                        <div class="chart-wrapper">
+                            <canvas id="dailyActivityChart"></canvas>
+                        </div>
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                        <div class="card">
+                            <div class="chart-wrapper" style="height: 125px;">
+                                <canvas id="weeklyActivityChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <div class="chart-wrapper" style="height: 125px;">
+                                <canvas id="hourlyActivityChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <section id="token-analytics-section">
+                <div class="section-header">
+                    <h2>Drained Token Analysis</h2>
+                    <input type="text" id="token-search" class="search-box" placeholder="Search tokens...">
+                </div>
+                <div class="card table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th data-sort="symbol">Symbol</th>
+                                <th data-sort="name">Name</th>
+                                <th data-sort="total_value_usd">Total Value (USD)</th>
+                                <th data-sort="total_amount">Total Amount</th>
+                                <th data-sort="frequency">Frequency</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tokens-table-body"></tbody>
+                    </table>
+                </div>
+            </section>
+            <section id="contract-analytics-section">
+                <div class="section-header">
+                    <h2>Malicious Contract Analysis (Click for Details)</h2>
+                    <input type="text" id="contract-search" class="search-box" placeholder="Search addresses...">
+                </div>
+                <div class="card table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th data-sort="contract_address">Address</th>
+                                <th data-sort="total_value_usd">Value Stolen (USD)</th>
+                                <th data-sort="total_eth_received">ETH Stolen</th>
+                                <th data-sort="total_transactions">Transactions</th>
+                                <th data-sort="unique_tokens">Tokens</th>
+                                <th data-sort="risk_score">Risk Score</th>
+                                <th data-sort="first_activity">First Activity</th>
+                                <th data-sort="last_activity">Last Activity</th>
+                            </tr>
+                        </thead>
+                        <tbody id="contracts-table-body"></tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+    <div id="contract-detail-modal" class="modal-backdrop">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modal-title">Contract Details</h2>
+                <span id="close-modal-button" class="close-button">×</span>
+            </div>
+            <div id="modal-body" class="modal-body"></div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            const data = {"summary": {"total_contracts": 1777, "total_eth_stolen": 0.7918275469036314, "total_value_usd": 2885.549459403805, "unique_tokens": 1, "total_transactions": 10380, "analysis_period_days": 29, "average_risk_score": 0.13333333333333333}, "time_analytics": {"daily_activity": {"2025-06-20": {"contracts": 0, "eth_stolen": "0", "transactions": 33}, "2025-06-01": {"contracts": 0, "eth_stolen": "0.6061039677040343", "transactions": 884}, "2025-06-14": {"contracts": 0, "eth_stolen": "0", "transactions": 10}, "2025-06-13": {"contracts": 0, "eth_stolen": "0", "transactions": 626}, "2025-06-23": {"contracts": 0, "eth_stolen": "0", "transactions": 62}, "2025-06-15": {"contracts": 0, "eth_stolen": "0", "transactions": 1}, "2025-06-17": {"contracts": 0, "eth_stolen": "0", "transactions": 7}, "2025-06-03": {"contracts": 0, "eth_stolen": "0.0239142568", "transactions": 790}, "2025-06-07": {"contracts": 0, "eth_stolen": "0", "transactions": 1176}, "2025-06-02": {"contracts": 0, "eth_stolen": "0.08", "transactions": 754}, "2025-06-30": {"contracts": 0, "eth_stolen": "0.081809322399597158", "transactions": 1}, "2025-06-04": {"contracts": 0, "eth_stolen": "0", "transactions": 590}, "2025-06-05": {"contracts": 0, "eth_stolen": "0", "transactions": 720}, "2025-06-06": {"contracts": 0, "eth_stolen": "0", "transactions": 917}, "2025-06-08": {"contracts": 0, "eth_stolen": "0", "transactions": 1151}, "2025-06-09": {"contracts": 0, "eth_stolen": "0", "transactions": 854}, "2025-06-10": {"contracts": 0, "eth_stolen": "0", "transactions": 501}, "2025-06-11": {"contracts": 0, "eth_stolen": "0", "transactions": 656}, "2025-06-12": {"contracts": 0, "eth_stolen": "0", "transactions": 647}}, "hourly_patterns": {"20": 408, "5": 690, "13": 173, "11": 259, "6": 751, "10": 395, "2": 509, "21": 361, "19": 335, "12": 204, "7": 647, "8": 637, "9": 503, "22": 434, "23": 437, "0": 512, "16": 324, "18": 266, "14": 275, "15": 288, "17": 302, "1": 488, "3": 566, "4": 616}, "weekly_patterns": {"Friday": 1576, "Sunday": 2036, "Saturday": 1186, "Monday": 1671, "Tuesday": 1298, "Wednesday": 1246, "Thursday": 1367}, "activity_timeline": [{"contract": "0x43ba1b8a4659ac35e3ac4bad51a2367b713063b4", "first_activity": "2025-06-01T05:34:47", "eth_stolen": 0.0, "risk_score": 0.1}, {"contract": "0xb565c8bf762a3f70ec8925d36b3da7826dd8f35b", "first_activity": "2025-06-01T05:34:47", "eth_stolen": 0.5, "risk_score": 0.2}, {"contract": "0x000000e71478ae831811716ab7b0cd7d4da00000", "first_activity": "2025-06-01T05:35:47", "eth_stolen": 0.0201039677040343, "risk_score": 0.1}, {"contract": "0x2830e4fd27a94b04c0d65c2490ddc836b2698bdc", "first_activity": "2025-06-01T05:35:59", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0x615a7f329a1964bb27791ab5b15f9919c72b9a85", "first_activity": "2025-06-01T05:42:11", "eth_stolen": 0.086, "risk_score": 0.1}, {"contract": "0x68ae6c736ae31bbab8d8b712cdc1f552e7de7351", "first_activity": "2025-06-01T05:51:59", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0x89383882fc2d0cd4d7952a3267a3b6dae967e704", "first_activity": "2025-06-01T05:53:23", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0x710fad1041f0ee79916bb1a6adef662303bb8b6e", "first_activity": "2025-06-01T05:54:23", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0x3220bf967f84160905e4d4326f7dbcd0a2f5a5bf", "first_activity": "2025-06-01T05:57:35", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0x93bf2165e9562abe3b72bfcc068c0d4500ff3e98", "first_activity": "2025-06-01T09:06:23", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0x15cdbb22d5d652449085725717c0ecb12663c852", "first_activity": "2025-06-01T10:45:11", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0x674a5d4b14b8ef94f2936e46610147200de94a47", "first_activity": "2025-06-01T11:01:23", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0x3928bd6b8969cde4bf129e1188ad944b8685a619", "first_activity": "2025-06-01T11:01:59", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0xe758a7ad26988d79ced09f6650c7eb5da7e38706", "first_activity": "2025-06-01T11:03:11", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0x9f74ba8fe698e9b7fee34374801eddef2184f709", "first_activity": "2025-06-01T11:03:47", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0x3257b1de05c458e43bd1fe6f0de4997268d6cd01", "first_activity": "2025-06-01T11:04:23", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0xea8cef3260f91b1b23fd8ab3671ef312ee44eb42", "first_activity": "2025-06-01T11:04:59", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0x3e356f6aff0e657dd2aebe69069646f75e70f4b3", "first_activity": "2025-06-01T11:05:35", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0xf3e24498ca38f13b475bfd49dd8208a5670f12b4", "first_activity": "2025-06-01T11:06:47", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0x2e9acd74a020b5a7141d95e7e6fb03f985276c79", "first_activity": "2025-06-01T11:07:35", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0x5b50f81c3b7694db4528c1652219f1671f7c1227", "first_activity": "2025-06-01T11:08:23", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0xbff8406f78cafc77f5973122fcbf832474953fbe", "first_activity": "2025-06-01T11:08:59", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0xbf6fdfdba06ba45b97f695519a0399fb15ec743b", "first_activity": "2025-06-01T11:09:47", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0xa3b01b121d1a5d59f6eb72c7ec5622c0d43d8b7c", "first_activity": "2025-06-01T11:10:35", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0xc46cc545d38decbf04d47be6b6c71856260ef6bf", "first_activity": "2025-06-01T11:11:11", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0xc986597b5bbb6e87ee195c1a5e8442b236d51d1e", "first_activity": "2025-06-01T11:11:47", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0x65447adfa3ca2c46088fc17175308e3197967807", "first_activity": "2025-06-01T11:12:23", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0x44b6e0bb1c505378b73ab657672cd99904b83a9c", "first_activity": "2025-06-01T11:12:59", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0x5d4cab81853067607cdf8b2c07c3375d3c145bd8", "first_activity": "2025-06-01T11:13:59", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0x3f24f297009bcc2653538f848c74e328a88bcf00", "first_activity": "2025-06-01T11:14:35", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0x36dcaafc1162fe6a71b87aff104ee2255c47f560", "first_activity": "2025-06-01T12:47:59", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0xbc9b681cd3dbc97f2bfbac8873dc9419761a628c", "first_activity": "2025-06-01T13:03:47", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0x6936d1cc676d3f9c64e6f96ef5700c3ed43a9c30", "first_activity": "2025-06-01T13:04:11", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0x0af7c5fb9c691d977f899771bb576310dee84881", "first_activity": "2025-06-01T21:23:59", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0xc6cb2c4d7c277bbd774fd9a9e485c1da0a460ade", "first_activity": "2025-06-02T00:35:59", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0xb847f107513522af770ee0aad8da0319e6da32b3", "first_activity": "2025-06-02T00:46:47", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0x391a1a33c1acc8eec82c6763e635ebe8c61391a7", "first_activity": "2025-06-02T10:23:11", "eth_stolen": 0.08, "risk_score": 0.1}, {"contract": "0x95394db7297c40fad47b2fff22a12e6437fbfb61", "first_activity": "2025-06-02T23:21:59", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0x32452ded702602dd2d0feb1f412bf0d2717b5dba", "first_activity": "2025-06-03T06:24:59", "eth_stolen": 0.10572357919959716, "risk_score": 0.2}, {"contract": "0xa10990ec38b8cebecf90ee621fb111980d5f6f4d", "first_activity": "2025-06-03T19:14:35", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0x1e2e4e04b72b3ecbe70fb5a142c8856c39c05d57", "first_activity": "2025-06-03T19:28:47", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0x7f9fed7a4fd7171f932c86fd4f6c10604697152a", "first_activity": "2025-06-04T13:41:47", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0x32aab136f90b59cb6c6a39c9c9cf220b1060e493", "first_activity": "2025-06-07T07:01:11", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0x95c4a3d8d9dc02e0504faa924cabc884e2c05123", "first_activity": "2025-06-07T07:07:47", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0xea37a7332cc65aa7891d043423510ee6947c4729", "first_activity": "2025-06-07T07:40:47", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0x46ce561f8851b8719b3cc45d76177120dd8fffaf", "first_activity": "2025-06-07T07:46:23", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0x6c8cf55f4f85830a21e8dde60c0f3c883899e773", "first_activity": "2025-06-07T08:30:59", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0xb31e2866fffc239b45008e03377e7204cfbf6121", "first_activity": "2025-06-07T09:22:59", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0xf66f9d2b28e341b854653afcb0a4d7033a2ded1c", "first_activity": "2025-06-07T10:23:11", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0xefbf3f335153410637e4927db6c5b9fc2872d82f", "first_activity": "2025-06-07T11:52:11", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0xbe6a5b73cecc8a5ff28e3962b3661c1cdba91fa2", "first_activity": "2025-06-07T12:36:35", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0xaae93b6006e9d06f7337928c5ab2496c1a0a89f3", "first_activity": "2025-06-07T12:41:59", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0x444d8931cd57e62bad73b2f14b2b6bdb4a1c5a45", "first_activity": "2025-06-07T13:48:59", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0x3a1306427a7e1c3a77b7ebb3dec9c6390a50dabd", "first_activity": "2025-06-07T18:32:11", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0x69d070188a4219be9950895f6c5920674a0619e0", "first_activity": "2025-06-13T10:27:23", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0x72eabecec5e3944cd777161592090f2a5ccd76eb", "first_activity": "2025-06-13T10:27:23", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0x0000491fc62179286541fc478f8483e8db210000", "first_activity": "2025-06-13T10:27:35", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0x000098110289ca73027467de1368010ddc8f0000", "first_activity": "2025-06-13T11:05:23", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0x0000ef1156c4d6b42146b8d4cac22221a8500000", "first_activity": "2025-06-13T11:05:23", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0x00001a2efd3bd07192b03018dd2b94b33bb20000", "first_activity": "2025-06-13T11:05:35", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0x00003770815d561648150e0bc137005ea80a0000", "first_activity": "2025-06-13T11:05:35", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0x00007fa69de773af47ea9de13c26e6826d770000", "first_activity": "2025-06-13T11:05:35", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0x00008c22f9f6f3101533f520e229bbb54be90000", "first_activity": "2025-06-13T11:05:35", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0x00009fc9e04ae4f40412c892252584d463800000", "first_activity": "2025-06-13T11:05:35", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0x000065b487ffe15d8e4baaf18267c54f858c0000", "first_activity": "2025-06-13T11:12:11", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0x0000fbb6a0c4128f37e33d0bffaa5d0a94f20000", "first_activity": "2025-06-13T11:12:11", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0x3e14cdf777bdc0a3f32ddb0699d75174bd4d4518", "first_activity": "2025-06-13T11:12:11", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0x00005bed3573b9c6e9b84cfd12e2a712e9620000", "first_activity": "2025-06-13T11:13:35", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0x00006eab3ba9e4b4ad1ab9d41e0ad431a01b0000", "first_activity": "2025-06-13T11:13:35", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0x000095c81ed785c46e77ee9a211e69f5ee290000", "first_activity": "2025-06-13T11:13:35", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0x4f8af45fa834394d51220bbe83b0c8b5d286b6de", "first_activity": "2025-06-14T05:08:11", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0x00003f7a56407ad75e876bf7b3422af0e47f0000", "first_activity": "2025-06-14T13:05:11", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0x0000d4b4f7c1b0342c3730022355d383cfa30000", "first_activity": "2025-06-14T13:07:35", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0x00000c7eae97813b0a784c06599d88434f500000", "first_activity": "2025-06-14T13:07:47", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0x5a6a3bc395e1234473055b192a1eb0428d4f92cd", "first_activity": "2025-06-14T13:24:23", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0x0000c67aae0bdc9bc8a630bf2bc87d6c29040000", "first_activity": "2025-06-14T13:24:35", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0x0000978c24f323ea200d18dae1538fb366890000", "first_activity": "2025-06-14T13:24:59", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0x0000132ad767459446fb8c463d0972ee52a80000", "first_activity": "2025-06-14T13:25:59", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0x0000572fc116555683d4f4671be59d26b7900000", "first_activity": "2025-06-14T13:26:35", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0x000058d302ab2ede8e29748081363e1e11170000", "first_activity": "2025-06-15T02:08:35", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0x0000d48017e333ac5442c40b358b5b9d1c540000", "first_activity": "2025-06-17T13:15:11", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0x000091ebcefca075cfbe22f02dbbc77f1e960000", "first_activity": "2025-06-20T20:56:11", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0x000091ee1e41dd61e20bd3917b3137a9632d0000", "first_activity": "2025-06-20T20:56:11", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0x00009b78edb52047c89b533c96d924d2cd990000", "first_activity": "2025-06-20T20:56:11", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0x0000a0d1d6999e074620dd214e491f92d9f50000", "first_activity": "2025-06-20T20:56:11", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0x0000f884cc41569b59709f2acf7136f624960000", "first_activity": "2025-06-20T20:56:11", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0x000004a211bf8444e1d4137c6ba895261e900000", "first_activity": "2025-06-20T20:57:11", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0x000006767c847de5ad60445892f9c2e8df400000", "first_activity": "2025-06-20T20:57:11", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0x0000079ba313562df2e0ef2c59ee74aa0a700000", "first_activity": "2025-06-20T20:57:11", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0x000007f281af9498288e55b3d6e891f472600000", "first_activity": "2025-06-20T20:57:11", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0x00000e59bab0f09ceeb78a1a791b21986c200000", "first_activity": "2025-06-20T20:57:11", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0x00000f7b9f3cc97277c7c788822dac1efbd00000", "first_activity": "2025-06-20T20:57:11", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0x000002b0d207d7d4a7c163a11967759cddb00000", "first_activity": "2025-06-20T20:57:23", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0x000003a3d8708e3570acee54eedf11320a200000", "first_activity": "2025-06-20T20:57:23", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0x00000403edda04d98ea7b341d786e86e91800000", "first_activity": "2025-06-20T20:57:23", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0x0000085f8b8a63cc1f136e36170020ec4d600000", "first_activity": "2025-06-20T20:57:23", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0x000009f33b32037cb38dacc652d382329fc00000", "first_activity": "2025-06-20T20:57:23", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0x00000a45ac1738caa42dfeafc730bceed2800000", "first_activity": "2025-06-20T20:57:23", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0x00000cd1de1ae3946c46dc8063112fe098700000", "first_activity": "2025-06-20T20:57:23", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0x00000e98f2c7ed2496ae45f06e1c42558bc00000", "first_activity": "2025-06-20T20:57:23", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0x289c9dad666a0bb81836b221fb46d9bf647c568f", "first_activity": "2025-06-20T20:57:23", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0x119467994ae20813983aff4cf966239cd80b77df", "first_activity": "2025-06-23T10:43:11", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0x15c0068a192296c45e3f0def56ca82c065518e45", "first_activity": "2025-06-23T10:43:11", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0x62849e466f5556dd844e6bfabd739d09ee112bf1", "first_activity": "2025-06-23T10:43:11", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0x66f33e6bcff83e32279186cab0e561e28923ccc2", "first_activity": "2025-06-23T10:43:11", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0x7b089a5a6ea7ed02bcd62b45b2844e5f8b044ddf", "first_activity": "2025-06-23T10:43:11", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0x9622c997dbd438d5f86a5d352322387fe418c4f9", "first_activity": "2025-06-23T10:43:11", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0xb094e3a6da57fbe0e07aec2e2f3dd905e654eb20", "first_activity": "2025-06-23T10:43:11", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0xbcc5497766befaea10fa5c665b54da1e3c3b4034", "first_activity": "2025-06-23T10:43:11", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0xfc0c387c5119d44d5388c25d5f57333d85986b39", "first_activity": "2025-06-23T10:43:11", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0x18d9b31570df805c92c5c7f1343edcc60f9a1e62", "first_activity": "2025-06-23T10:43:23", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0x28647709ff3cfd1ef9e870bfb5c6adb461ea5be0", "first_activity": "2025-06-23T10:43:23", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0x2b6438a33450b394b24391cb66cfa67c7db3d29d", "first_activity": "2025-06-23T10:43:23", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0x36011bb0484b72a22ccd0c25be2f0f2c3705c86d", "first_activity": "2025-06-23T10:43:23", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0x64778fe8e8df1c34a87b2b7321029a5f4fd089d8", "first_activity": "2025-06-23T10:43:23", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0x69b25720ceb137ff9106c4546a57d662e094cb0f", "first_activity": "2025-06-23T10:43:23", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0x72ae0e17bc80aacbd3f98175fc96396cd4c6cfe1", "first_activity": "2025-06-23T10:43:23", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0x7a56c1149b64fc0e59bba2ca2febff790d921b40", "first_activity": "2025-06-23T10:43:23", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0x9211f5331dc6c82a4a4a051e0f924652f70aa793", "first_activity": "2025-06-23T10:43:23", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0x9aa6e30f5d3709d159862e4d7da7dc89fbd471e3", "first_activity": "2025-06-23T10:43:23", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0xdc71dc7fc3e14c80d62ef6f466a029c50f864ca2", "first_activity": "2025-06-23T10:43:23", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0xe7e83263661aa6fabd7cf9d50c8c4d5f670627fa", "first_activity": "2025-06-23T10:43:23", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0x0eaf4707072c330636d4f5193027f7bdcfaaa9af", "first_activity": "2025-06-23T10:43:59", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0x1b2940bdbe56762eeb2b3786c1f9634bcc41309b", "first_activity": "2025-06-23T10:43:59", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0x2d65eab47453c3fabcde8f634d3bd9e4d57ebbaf", "first_activity": "2025-06-23T10:43:59", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0x346fa8d2d5b7bf7619ead303489a72241ad58e00", "first_activity": "2025-06-23T10:43:59", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0x376cd78945c469e154ed09748ca8bb8c79516f69", "first_activity": "2025-06-23T10:43:59", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0x3f970edef6c9bc65223229e8314c1a36bc05bb39", "first_activity": "2025-06-23T10:43:59", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0x4ec90da8f8d647b64bf63bdd01127f3cfcc49ac6", "first_activity": "2025-06-23T10:43:59", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0x543ca860d56288f55061c479981b8674482dc17f", "first_activity": "2025-06-23T10:43:59", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0x54486ab9a3606a1bbf9aaab13698edc9162a5cef", "first_activity": "2025-06-23T10:43:59", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0x65afc3513c56aa21faf8a1e3f2e7642270ef3e84", "first_activity": "2025-06-23T10:43:59", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0x81c78d71c02805ce6ee252e6f9f8a0314213d87b", "first_activity": "2025-06-23T10:43:59", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0x899e24c12551da45dd2239cc10240add9215618f", "first_activity": "2025-06-23T10:43:59", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0x9109079a62be757f278b8931b59b901423ae8ca6", "first_activity": "2025-06-23T10:43:59", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0x9d17a3050be66783185308f0fdf1efc837d8e0dd", "first_activity": "2025-06-23T10:43:59", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0xa6ff92e2b10c851dc737854dbc7ba50aa4a3a2d4", "first_activity": "2025-06-23T10:43:59", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0xa84e9ff55c19ddfd3616c1d676c028a03f799028", "first_activity": "2025-06-23T10:43:59", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0xac7cc81f2c65672e8df46c117c04ee804cb4549d", "first_activity": "2025-06-23T10:43:59", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0xadbdc1fc6c16954e7f4adadc3ebafd843b6a6ebb", "first_activity": "2025-06-23T10:43:59", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0xb0b6e98e7b3098003acf8d8e5f452813cb8b3221", "first_activity": "2025-06-23T10:43:59", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0xcf5efce5dfc91ea5a1d35c7cf4b5abed2550b3d3", "first_activity": "2025-06-23T10:43:59", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0xd042082db9ae4b4a01167d318a3c599284c53388", "first_activity": "2025-06-23T10:43:59", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0xd56454ced8c05336445650534835717d92c6fd53", "first_activity": "2025-06-23T10:43:59", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0xd65ccd4f264c9c5ba91b904e367816c7b9a36995", "first_activity": "2025-06-23T10:43:59", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0xe2c415ab150b8e6943b5ccef573ab20219b84567", "first_activity": "2025-06-23T10:43:59", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0xf30de88e43cd62384ba1573522083dda42ac8fbd", "first_activity": "2025-06-23T10:43:59", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0xf74e9617bbe2d167fb182e91dcfdf26e197c4008", "first_activity": "2025-06-23T10:43:59", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0xf85384d87084db70346c76b738f863d297098447", "first_activity": "2025-06-23T10:43:59", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0xfadc9aa511953b4e22fc5ebad52222990fa906c5", "first_activity": "2025-06-23T10:43:59", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0xfbac0364a02148e2226a63c17d48800c9ea66e70", "first_activity": "2025-06-23T10:43:59", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0x1548166874433d198e601216a778abf5c32ae3c3", "first_activity": "2025-06-23T10:56:23", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0x5806b9189fd8922afed6290194d060152fa9c249", "first_activity": "2025-06-23T10:56:23", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0x5c91b9b6c89a69ea6138bb0df6b1e531e74e21c5", "first_activity": "2025-06-23T10:56:23", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0x7c3847fe27a9215cb36580c09d6e517d05892060", "first_activity": "2025-06-23T10:56:23", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0x815e397ef731824b249a10ad376a06d65a011d7a", "first_activity": "2025-06-23T10:56:23", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0xb64b2a9582405c7178ece9f3b1ada749e368725f", "first_activity": "2025-06-23T10:56:23", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0xba2ef5ee22eaa3821ff3f6ade6ac7cda3c87c3e2", "first_activity": "2025-06-23T10:56:23", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0xe11ff77a2718904ac96458400cc4685f831303ec", "first_activity": "2025-06-23T10:56:23", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0xf71eeb9ce3c753aaeed4d487b493621495dcae91", "first_activity": "2025-06-23T10:56:23", "eth_stolen": 0.0, "risk_score": 0.0}, {"contract": "0x3bf7145c087674ae8a9233a270b6214284cbb198", "first_activity": "2025-06-23T10:56:35", "eth_stolen": 0.0, "risk_score": 0.0}], "peak_activity_periods": [["2025-06-07", 1176], ["2025-06-08", 1151], ["2025-06-06", 917], ["2025-06-01", 884], ["2025-06-09", 854], ["2025-06-03", 790], ["2025-06-02", 754], ["2025-06-05", 720], ["2025-06-11", 656], ["2025-06-12", 647]]}, "token_analytics": {"token_summary": {"0x8e27f5bf0eb69faf8bce5cf54e2ca0bfa9db5313": {"symbol": "AIC", "name": "AI Coin", "total_amount": 1.0, "total_value_usd": 0.235396725421, "frequency": 1, "contracts_count": 1}}, "top_tokens_by_value": [{"address": "0x8e27f5bf0eb69faf8bce5cf54e2ca0bfa9db5313", "symbol": "AIC", "name": "AI Coin", "total_amount": 1.0, "total_value_usd": 0.235396725421, "frequency": 1, "contracts_count": 1}], "top_tokens_by_frequency": [{"address": "0x8e27f5bf0eb69faf8bce5cf54e2ca0bfa9db5313", "symbol": "AIC", "name": "AI Coin", "total_amount": 1.0, "total_value_usd": 0.235396725421, "frequency": 1, "contracts_count": 1}], "token_distribution": {"high_value": 0, "medium_value": 0, "low_value": 0, "minimal_value": 1}, "unique_token_count": 1}, "contract_analytics": {"top_contracts_by_value": [{"address": "0xb565c8bf762a3f70ec8925d36b3da7826dd8f35b", "total_value_usd": 1821.270795375, "total_eth": 0.5, "total_transactions": 3, "unique_tokens": 0, "risk_score": 0.2, "first_activity": "2025-06-01T05:34:47", "last_activity": "2025-06-01T05:45:35"}, {"address": "0x32452ded702602dd2d0feb1f412bf0d2717b5dba", "total_value_usd": 385.4879987708872, "total_eth": 0.10572357919959716, "total_transactions": 3, "unique_tokens": 0, "risk_score": 0.2, "first_activity": "2025-06-03T06:24:59", "last_activity": "2025-06-30T20:52:23"}, {"address": "0x615a7f329a1964bb27791ab5b15f9919c72b9a85", "total_value_usd": 313.57492450984, "total_eth": 0.086, "total_transactions": 7, "unique_tokens": 0, "risk_score": 0.1, "first_activity": "2025-06-01T05:42:11", "last_activity": "2025-06-05T05:32:59"}, {"address": "0x391a1a33c1acc8eec82c6763e635ebe8c61391a7", "total_value_usd": 291.6944632768, "total_eth": 0.08, "total_transactions": 4, "unique_tokens": 0, "risk_score": 0.1, "first_activity": "2025-06-02T10:23:11", "last_activity": "2025-06-02T12:46:47"}, {"address": "0x000000e71478ae831811716ab7b0cd7d4da00000", "total_value_usd": 73.28588074585703, "total_eth": 0.0201039677040343, "total_transactions": 2, "unique_tokens": 0, "risk_score": 0.1, "first_activity": "2025-06-01T05:35:47", "last_activity": "2025-06-20T20:57:23"}, {"address": "0x43ba1b8a4659ac35e3ac4bad51a2367b713063b4", "total_value_usd": 0.235396725421, "total_eth": 0.0, "total_transactions": 10001, "unique_tokens": 1, "risk_score": 0.1, "first_activity": "2025-06-01T05:34:47", "last_activity": "2025-06-13T14:59:35"}, {"address": "0x00000057a2d7fef9dd8a8d69b0fe1685aaf20000", "total_value_usd": 0.0, "total_eth": 0.0, "total_transactions": 0, "unique_tokens": 0, "risk_score": 0.0, "first_activity": null, "last_activity": null}, {"address": "0x000001647b9358cbe855e4d79c1f976d71da0000", "total_value_usd": 0.0, "total_eth": 0.0, "total_transactions": 0, "unique_tokens": 0, "risk_score": 0.0, "first_activity": null, "last_activity": null}, {"address": "0x00000178ecb9add4aad56626a5cdf7eedcde0000", "total_value_usd": 0.0, "total_eth": 0.0, "total_transactions": 0, "unique_tokens": 0, "risk_score": 0.0, "first_activity": null, "last_activity": null}, {"address": "0x00000227a9ef84213d03725b60332f12ca000000", "total_value_usd": 0.0, "total_eth": 0.0, "total_transactions": 0, "unique_tokens": 0, "risk_score": 0.0, "first_activity": null, "last_activity": null}, {"address": "0x00000287a4b6ed7d04671ed5cfc1893b6f490000", "total_value_usd": 0.0, "total_eth": 0.0, "total_transactions": 0, "unique_tokens": 0, "risk_score": 0.0, "first_activity": null, "last_activity": null}, {"address": "0x000002b0d207d7d4a7c163a11967759cddb00000", "total_value_usd": 0.0, "total_eth": 0.0, "total_transactions": 1, "unique_tokens": 0, "risk_score": 0.0, "first_activity": "2025-06-20T20:57:23", "last_activity": "2025-06-20T20:57:23"}, {"address": "0x000003a3d8708e3570acee54eedf11320a200000", "total_value_usd": 0.0, "total_eth": 0.0, "total_transactions": 1, "unique_tokens": 0, "risk_score": 0.0, "first_activity": "2025-06-20T20:57:23", "last_activity": "2025-06-20T20:57:23"}, {"address": "0x000003e3518c67575a1fb480174be7329dc50000", "total_value_usd": 0.0, "total_eth": 0.0, "total_transactions": 0, "unique_tokens": 0, "risk_score": 0.0, "first_activity": null, "last_activity": null}, {"address": "0x00000403edda04d98ea7b341d786e86e91800000", "total_value_usd": 0.0, "total_eth": 0.0, "total_transactions": 1, "unique_tokens": 0, "risk_score": 0.0, "first_activity": "2025-06-20T20:57:23", "last_activity": "2025-06-20T20:57:23"}, {"address": "0x00000458083408011a2e2e7f7255bf4e464f0000", "total_value_usd": 0.0, "total_eth": 0.0, "total_transactions": 0, "unique_tokens": 0, "risk_score": 0.0, "first_activity": null, "last_activity": null}, {"address": "0x000004a211bf8444e1d4137c6ba895261e900000", "total_value_usd": 0.0, "total_eth": 0.0, "total_transactions": 1, "unique_tokens": 0, "risk_score": 0.0, "first_activity": "2025-06-20T20:57:11", "last_activity": "2025-06-20T20:57:11"}, {"address": "0x000004f0209592d91e40b297d22b49a2a9210000", "total_value_usd": 0.0, "total_eth": 0.0, "total_transactions": 0, "unique_tokens": 0, "risk_score": 0.0, "first_activity": null, "last_activity": null}, {"address": "0x000005764f1bcf58fa39b9b80a9bcf3f15e00000", "total_value_usd": 0.0, "total_eth": 0.0, "total_transactions": 0, "unique_tokens": 0, "risk_score": 0.0, "first_activity": null, "last_activity": null}, {"address": "0x000006311ebd1a728e2daf276781771b6ae00000", "total_value_usd": 0.0, "total_eth": 0.0, "total_transactions": 0, "unique_tokens": 0, "risk_score": 0.0, "first_activity": null, "last_activity": null}], "top_contracts_by_transactions": [{"address": "0x43ba1b8a4659ac35e3ac4bad51a2367b713063b4", "total_value_usd": 0.235396725421, "total_eth": 0.0, "total_transactions": 10001, "unique_tokens": 1, "risk_score": 0.1, "first_activity": "2025-06-01T05:34:47", "last_activity": "2025-06-13T14:59:35"}, {"address": "0x2830e4fd27a94b04c0d65c2490ddc836b2698bdc", "total_value_usd": 0.0, "total_eth": 0.0, "total_transactions": 171, "unique_tokens": 0, "risk_score": 0.0, "first_activity": "2025-06-01T05:35:59", "last_activity": "2025-06-17T23:10:47"}, {"address": "0x3e14cdf777bdc0a3f32ddb0699d75174bd4d4518", "total_value_usd": 0.0, "total_eth": 0.0, "total_transactions": 8, "unique_tokens": 0, "risk_score": 0.0, "first_activity": "2025-06-13T11:12:11", "last_activity": "2025-06-13T18:34:47"}, {"address": "0x615a7f329a1964bb27791ab5b15f9919c72b9a85", "total_value_usd": 313.57492450984, "total_eth": 0.086, "total_transactions": 7, "unique_tokens": 0, "risk_score": 0.1, "first_activity": "2025-06-01T05:42:11", "last_activity": "2025-06-05T05:32:59"}, {"address": "0x391a1a33c1acc8eec82c6763e635ebe8c61391a7", "total_value_usd": 291.6944632768, "total_eth": 0.08, "total_transactions": 4, "unique_tokens": 0, "risk_score": 0.1, "first_activity": "2025-06-02T10:23:11", "last_activity": "2025-06-02T12:46:47"}, {"address": "0x00000c7eae97813b0a784c06599d88434f500000", "total_value_usd": 0.0, "total_eth": 0.0, "total_transactions": 3, "unique_tokens": 0, "risk_score": 0.0, "first_activity": "2025-06-14T13:07:47", "last_activity": "2025-06-20T20:57:11"}, {"address": "0x0000132ad767459446fb8c463d0972ee52a80000", "total_value_usd": 0.0, "total_eth": 0.0, "total_transactions": 3, "unique_tokens": 0, "risk_score": 0.0, "first_activity": "2025-06-14T13:25:59", "last_activity": "2025-06-20T20:57:11"}, {"address": "0x00001a2efd3bd07192b03018dd2b94b33bb20000", "total_value_usd": 0.0, "total_eth": 0.0, "total_transactions": 3, "unique_tokens": 0, "risk_score": 0.0, "first_activity": "2025-06-13T11:05:35", "last_activity": "2025-06-13T11:51:59"}, {"address": "0x0000572fc116555683d4f4671be59d26b7900000", "total_value_usd": 0.0, "total_eth": 0.0, "total_transactions": 3, "unique_tokens": 0, "risk_score": 0.0, "first_activity": "2025-06-14T13:26:35", "last_activity": "2025-06-20T20:57:11"}, {"address": "0x0000d4b4f7c1b0342c3730022355d383cfa30000", "total_value_usd": 0.0, "total_eth": 0.0, "total_transactions": 3, "unique_tokens": 0, "risk_score": 0.0, "first_activity": "2025-06-14T13:07:35", "last_activity": "2025-06-20T20:57:11"}, {"address": "0x32452ded702602dd2d0feb1f412bf0d2717b5dba", "total_value_usd": 385.4879987708872, "total_eth": 0.10572357919959716, "total_transactions": 3, "unique_tokens": 0, "risk_score": 0.2, "first_activity": "2025-06-03T06:24:59", "last_activity": "2025-06-30T20:52:23"}, {"address": "0x3928bd6b8969cde4bf129e1188ad944b8685a619", "total_value_usd": 0.0, "total_eth": 0.0, "total_transactions": 3, "unique_tokens": 0, "risk_score": 0.0, "first_activity": "2025-06-01T11:01:59", "last_activity": "2025-06-01T20:39:47"}, {"address": "0xb565c8bf762a3f70ec8925d36b3da7826dd8f35b", "total_value_usd": 1821.270795375, "total_eth": 0.5, "total_transactions": 3, "unique_tokens": 0, "risk_score": 0.2, "first_activity": "2025-06-01T05:34:47", "last_activity": "2025-06-01T05:45:35"}, {"address": "0x000000e71478ae831811716ab7b0cd7d4da00000", "total_value_usd": 73.28588074585703, "total_eth": 0.0201039677040343, "total_transactions": 2, "unique_tokens": 0, "risk_score": 0.1, "first_activity": "2025-06-01T05:35:47", "last_activity": "2025-06-20T20:57:23"}, {"address": "0x00003f7a56407ad75e876bf7b3422af0e47f0000", "total_value_usd": 0.0, "total_eth": 0.0, "total_transactions": 2, "unique_tokens": 0, "risk_score": 0.0, "first_activity": "2025-06-14T13:05:11", "last_activity": "2025-06-23T06:45:23"}, {"address": "0x000058d302ab2ede8e29748081363e1e11170000", "total_value_usd": 0.0, "total_eth": 0.0, "total_transactions": 2, "unique_tokens": 0, "risk_score": 0.0, "first_activity": "2025-06-15T02:08:35", "last_activity": "2025-06-17T05:17:11"}, {"address": "0x000065b487ffe15d8e4baaf18267c54f858c0000", "total_value_usd": 0.0, "total_eth": 0.0, "total_transactions": 2, "unique_tokens": 0, "risk_score": 0.0, "first_activity": "2025-06-13T11:12:11", "last_activity": "2025-06-13T11:12:11"}, {"address": "0x000091ebcefca075cfbe22f02dbbc77f1e960000", "total_value_usd": 0.0, "total_eth": 0.0, "total_transactions": 2, "unique_tokens": 0, "risk_score": 0.0, "first_activity": "2025-06-20T20:56:11", "last_activity": "2025-06-20T20:57:11"}, {"address": "0x000091ee1e41dd61e20bd3917b3137a9632d0000", "total_value_usd": 0.0, "total_eth": 0.0, "total_transactions": 2, "unique_tokens": 0, "risk_score": 0.0, "first_activity": "2025-06-20T20:56:11", "last_activity": "2025-06-20T20:56:59"}, {"address": "0x00009b78edb52047c89b533c96d924d2cd990000", "total_value_usd": 0.0, "total_eth": 0.0, "total_transactions": 2, "unique_tokens": 0, "risk_score": 0.0, "first_activity": "2025-06-20T20:56:11", "last_activity": "2025-06-20T20:57:11"}], "risk_score_distribution": {"high_risk": 0, "medium_risk": 0, "low_risk": 6, "minimal_risk": 1771}, "contract_activity_patterns": {}}, "chart_data": {"daily_value_timeline": [{"date": "2025-06-01", "value": 2208.366997356118}, {"date": "2025-06-02", "value": 291.6944632768}, {"date": "2025-06-03", "value": 385.4879987708872}, {"date": "2025-06-04", "value": 0.0}, {"date": "2025-06-07", "value": 0.0}, {"date": "2025-06-13", "value": 0.0}, {"date": "2025-06-14", "value": 0.0}, {"date": "2025-06-15", "value": 0.0}, {"date": "2025-06-17", "value": 0.0}, {"date": "2025-06-20", "value": 0.0}, {"date": "2025-06-23", "value": 0.0}], "token_value_pie": [{"symbol": "AIC", "value": 0.235396725421}], "risk_score_histogram": [], "transaction_volume_bars": []}, "processed_contracts": [{"contract_address": "0xb565c8bf762a3f70ec8925d36b3da7826dd8f35b", "total_value_usd": 1821.270795375, "total_eth_received": 0.5, "total_transactions": 3, "unique_tokens": 0, "risk_score": 0.2, "first_activity": "2025-06-01T05:34:47", "last_activity": "2025-06-01T05:45:35", "eth_transactions": 3, "token_transactions": 0}, {"contract_address": "0x32452ded702602dd2d0feb1f412bf0d2717b5dba", "total_value_usd": 385.4879987708872, "total_eth_received": 0.10572357919959716, "total_transactions": 3, "unique_tokens": 0, "risk_score": 0.2, "first_activity": "2025-06-03T06:24:59", "last_activity": "2025-06-30T20:52:23", "eth_transactions": 3, "token_transactions": 0}, {"contract_address": "0x615a7f329a1964bb27791ab5b15f9919c72b9a85", "total_value_usd": 313.57492450984, "total_eth_received": 0.086, "total_transactions": 7, "unique_tokens": 0, "risk_score": 0.1, "first_activity": "2025-06-01T05:42:11", "last_activity": "2025-06-05T05:32:59", "eth_transactions": 7, "token_transactions": 0}, {"contract_address": "0x391a1a33c1acc8eec82c6763e635ebe8c61391a7", "total_value_usd": 291.6944632768, "total_eth_received": 0.08, "total_transactions": 4, "unique_tokens": 0, "risk_score": 0.1, "first_activity": "2025-06-02T10:23:11", "last_activity": "2025-06-02T12:46:47", "eth_transactions": 4, "token_transactions": 0}, {"contract_address": "0x000000e71478ae831811716ab7b0cd7d4da00000", "total_value_usd": 73.28588074585703, "total_eth_received": 0.0201039677040343, "total_transactions": 2, "unique_tokens": 0, "risk_score": 0.1, "first_activity": "2025-06-01T05:35:47", "last_activity": "2025-06-20T20:57:23", "eth_transactions": 2, "token_transactions": 0}, {"contract_address": "0x43ba1b8a4659ac35e3ac4bad51a2367b713063b4", "total_value_usd": 0.235396725421, "total_eth_received": 0.0, "total_transactions": 10001, "unique_tokens": 1, "risk_score": 0.1, "first_activity": "2025-06-01T05:34:47", "last_activity": "2025-06-13T14:59:35", "eth_transactions": 10001, "token_transactions": 0}, {"contract_address": "0x00000057a2d7fef9dd8a8d69b0fe1685aaf20000", "total_value_usd": 0.0, "total_eth_received": 0.0, "total_transactions": 0, "unique_tokens": 0, "risk_score": 0.0, "first_activity": "", "last_activity": "", "eth_transactions": 0, "token_transactions": 0}, {"contract_address": "0x000001647b9358cbe855e4d79c1f976d71da0000", "total_value_usd": 0.0, "total_eth_received": 0.0, "total_transactions": 0, "unique_tokens": 0, "risk_score": 0.0, "first_activity": "", "last_activity": "", "eth_transactions": 0, "token_transactions": 0}, {"contract_address": "0x00000178ecb9add4aad56626a5cdf7eedcde0000", "total_value_usd": 0.0, "total_eth_received": 0.0, "total_transactions": 0, "unique_tokens": 0, "risk_score": 0.0, "first_activity": "", "last_activity": "", "eth_transactions": 0, "token_transactions": 0}, {"contract_address": "0x00000227a9ef84213d03725b60332f12ca000000", "total_value_usd": 0.0, "total_eth_received": 0.0, "total_transactions": 0, "unique_tokens": 0, "risk_score": 0.0, "first_activity": "", "last_activity": "", "eth_transactions": 0, "token_transactions": 0}, {"contract_address": "0x00000287a4b6ed7d04671ed5cfc1893b6f490000", "total_value_usd": 0.0, "total_eth_received": 0.0, "total_transactions": 0, "unique_tokens": 0, "risk_score": 0.0, "first_activity": "", "last_activity": "", "eth_transactions": 0, "token_transactions": 0}, {"contract_address": "0x000002b0d207d7d4a7c163a11967759cddb00000", "total_value_usd": 0.0, "total_eth_received": 0.0, "total_transactions": 1, "unique_tokens": 0, "risk_score": 0.0, "first_activity": "2025-06-20T20:57:23", "last_activity": "2025-06-20T20:57:23", "eth_transactions": 1, "token_transactions": 0}, {"contract_address": "0x000003a3d8708e3570acee54eedf11320a200000", "total_value_usd": 0.0, "total_eth_received": 0.0, "total_transactions": 1, "unique_tokens": 0, "risk_score": 0.0, "first_activity": "2025-06-20T20:57:23", "last_activity": "2025-06-20T20:57:23", "eth_transactions": 1, "token_transactions": 0}, {"contract_address": "0x000003e3518c67575a1fb480174be7329dc50000", "total_value_usd": 0.0, "total_eth_received": 0.0, "total_transactions": 0, "unique_tokens": 0, "risk_score": 0.0, "first_activity": "", "last_activity": "", "eth_transactions": 0, "token_transactions": 0}, {"contract_address": "0x00000403edda04d98ea7b341d786e86e91800000", "total_value_usd": 0.0, "total_eth_received": 0.0, "total_transactions": 1, "unique_tokens": 0, "risk_score": 0.0, "first_activity": "2025-06-20T20:57:23", "last_activity": "2025-06-20T20:57:23", "eth_transactions": 1, "token_transactions": 0}, {"contract_address": "0x00000458083408011a2e2e7f7255bf4e464f0000", "total_value_usd": 0.0, "total_eth_received": 0.0, "total_transactions": 0, "unique_tokens": 0, "risk_score": 0.0, "first_activity": "", "last_activity": "", "eth_transactions": 0, "token_transactions": 0}, {"contract_address": "0x000004a211bf8444e1d4137c6ba895261e900000", "total_value_usd": 0.0, "total_eth_received": 0.0, "total_transactions": 1, "unique_tokens": 0, "risk_score": 0.0, "first_activity": "2025-06-20T20:57:11", "last_activity": "2025-06-20T20:57:11", "eth_transactions": 1, "token_transactions": 0}, {"contract_address": "0x000004f0209592d91e40b297d22b49a2a9210000", "total_value_usd": 0.0, "total_eth_received": 0.0, "total_transactions": 0, "unique_tokens": 0, "risk_score": 0.0, "first_activity": "", "last_activity": "", "eth_transactions": 0, "token_transactions": 0}, {"contract_address": "0x000005764f1bcf58fa39b9b80a9bcf3f15e00000", "total_value_usd": 0.0, "total_eth_received": 0.0, "total_transactions": 0, "unique_tokens": 0, "risk_score": 0.0, "first_activity": "", "last_activity": "", "eth_transactions": 0, "token_transactions": 0}, {"contract_address": "0x000006311ebd1a728e2daf276781771b6ae00000", "total_value_usd": 0.0, "total_eth_received": 0.0, "total_transactions": 0, "unique_tokens": 0, "risk_score": 0.0, "first_activity": "", "last_activity": "", "eth_transactions": 0, "token_transactions": 0}], "contract_transactions": {"0x43ba1b8a4659ac35e3ac4bad51a2367b713063b4": {"erc20": [{"drainer_address": "0x43ba1b8a4659ac35e3ac4bad51a2367b713063b4", "batch_id": "phishing_analysis", "chain": "arbitrum", "chain_id": 1, "token_contract": "0x8e27f5bf0eb69faf8bce5cf54e2ca0bfa9db5313", "token_symbol": "AIC", "token_name": "AI Coin", "quantity_stolen": 1, "decimals": 18, "transaction_hash": "0xf521182e77d028bc7416ce62daae4237a2310737906c2434d1f75e832ce13778", "timestamp": "2025-06-04 00:58:11 UTC", "block_number": 22628746}], "nft": []}}};
+            let tokenSort = { key: 'total_value_usd', asc: false };
+            let contractSort = { key: 'total_value_usd', asc: false };
+
+            function init() {
+                if (!data) {
+                    document.body.innerHTML = 'Error: Could not load report data.';
+                    return;
+                }
+                populateKPIs(data.summary);
+                renderTimeAnalytics(data.time_analytics);
+                renderTokenTable();
+                renderContractTable();
+                setupEventListeners();
+            }
+            
+            function formatNumber(num, fractionDigits = 2) {
+                if (typeof num !== 'number' || isNaN(num)) return '0.00';
+                return num.toLocaleString(undefined, { minimumFractionDigits: fractionDigits, maximumFractionDigits: fractionDigits });
+            }
+
+            function populateKPIs(summary) {
+                document.getElementById('kpi-value-stolen').textContent = `${Math.round(summary.total_value_usd).toLocaleString()}`;
+                document.getElementById('kpi-eth-stolen').textContent = summary.total_eth_stolen.toFixed(4);
+                document.getElementById('kpi-contracts').textContent = summary.total_contracts.toLocaleString();
+                document.getElementById('kpi-tokens').textContent = summary.unique_tokens.toLocaleString();
+            }
+
+            function renderTimeAnalytics(analytics) {
+                if (!analytics || !analytics.daily_activity) return;
+                
+                const dailyDf = Object.entries(analytics.daily_activity).map(([date, v]) => ({date: new Date(date), ...v})).sort((a,b) => a.date - b.date);
+                
+                const dayOrder = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+                const weeklySeries = Object.entries(analytics.weekly_patterns || {}).sort((a, b) => dayOrder.indexOf(a[0]) - dayOrder.indexOf(b[0]));
+                
+                const hourlySeries = Object.entries(analytics.hourly_patterns || {}).map(([k,v])=>[parseInt(k),v]).sort((a,b)=>a[0]-b[0]);
+
+                new Chart(document.getElementById('dailyActivityChart'), createDailyChart(dailyDf));
+                new Chart(document.getElementById('weeklyActivityChart'), createBarChart(weeklySeries.map(d => d[0]), weeklySeries.map(d => d[1]), 'Weekly Pattern', 'chart-1'));
+                new Chart(document.getElementById('hourlyActivityChart'), createBarChart(hourlySeries.map(d => `${d[0]}:00`), hourlySeries.map(d => d[1]), 'Hourly Pattern (UTC)', 'chart-2'));
+            }
+
+            function renderTokenTable(filter = '') {
+                const tokens = data.token_analytics && data.token_analytics.token_summary ? Object.values(data.token_analytics.token_summary) : [];
+                const tableBody = document.getElementById('tokens-table-body');
+                tableBody.innerHTML = '';
+                
+                const filtered = tokens.filter(t => t.name && t.symbol && 
+                    (t.name.toLowerCase().includes(filter.toLowerCase()) || 
+                     t.symbol.toLowerCase().includes(filter.toLowerCase())));
+                
+                filtered.sort((a, b) => {
+                    const valA = a[tokenSort.key] || 0;
+                    const valB = b[tokenSort.key] || 0;
+                    if (valA < valB) return tokenSort.asc ? -1 : 1;
+                    if (valA > valB) return tokenSort.asc ? 1 : -1;
+                    return 0;
+                });
+
+                filtered.forEach(token => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${token.symbol || 'N/A'}</td>
+                        <td>${token.name || 'N/A'}</td>
+                        <td>$${formatNumber(token.total_value_usd || 0)}</td>
+                        <td>${formatNumber(token.total_amount || 0)}</td>
+                        <td>${token.frequency || 0}</td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+            }
+
+            function renderContractTable(filter = '') {
+                const tableBody = document.getElementById('contracts-table-body');
+                tableBody.innerHTML = '';
+
+                const filtered = (data.processed_contracts || []).filter(c => 
+                    c.contract_address && c.contract_address.toLowerCase().includes(filter.toLowerCase()));
+
+                filtered.sort((a, b) => {
+                    const valA = a[contractSort.key] || 0;
+                    const valB = b[contractSort.key] || 0;
+                    if (valA < valB) return contractSort.asc ? -1 : 1;
+                    if (valA > valB) return contractSort.asc ? 1 : -1;
+                    return 0;
+                });
+
+                filtered.forEach(c => {
+                    const row = document.createElement('tr');
+                    row.className = 'contract-row';
+                    row.dataset.address = c.contract_address;
+                    
+                    // Format dates safely with validation
+                    const formatDate = (dateStr) => {
+                        if (!dateStr) return 'N/A';
+                        try {
+                            const date = new Date(dateStr);
+                            
+                            // Validate date is reasonable (between 2020 and 2030)
+                            const year = date.getFullYear();
+                            if (isNaN(year) || year < 2020 || year > 2030) {
+                                console.warn('Invalid date detected:', dateStr, 'Year:', year);
+                                return '⚠️ Invalid Date';
+                            }
+                            
+                            return date.toLocaleDateString('en-US', { 
+                                year: 'numeric', 
+                                month: 'short', 
+                                day: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit'
+                            });
+                        } catch (e) {
+                            console.error('Date parsing error:', e, 'for date:', dateStr);
+                            return '❌ Parse Error';
+                        }
+                    };
+                    
+                    row.innerHTML = `
+                        <td><a href="https://etherscan.io/address/${c.contract_address}" target="_blank">${c.contract_address}</a></td>
+                        <td>$${formatNumber(c.total_value_usd || 0)}</td>
+                        <td>${(c.total_eth_received || 0).toFixed(4)}</td>
+                        <td>${formatNumber(c.total_transactions || 0, 0)}</td>
+                        <td>${formatNumber(c.unique_tokens || 0, 0)}</td>
+                        <td>${(c.risk_score || 0).toFixed(2)}</td>
+                        <td>${formatDate(c.first_activity)}</td>
+                        <td>${formatDate(c.last_activity)}</td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+            }
+            
+            function showContractDetail(address) {
+                const contractTxs = data.contract_transactions && data.contract_transactions[address];
+                document.getElementById('modal-title').textContent = `Transaction Details for ${address}`;
+                const modalBody = document.getElementById('modal-body');
+                
+                let content = '<h3>ERC20 Transactions</h3>';
+                if (contractTxs && contractTxs.erc20 && contractTxs.erc20.length > 0) {
+                    content += '<table><thead><tr><th>Timestamp</th><th>Token</th><th>Quantity Stolen</th><th>Transaction Hash</th></tr></thead><tbody>';
+                    contractTxs.erc20.forEach(tx => {
+                        content += `<tr>
+                            <td>${new Date(tx.timestamp).toLocaleString()}</td>
+                            <td>${tx.token_symbol || 'Unknown'}</td>
+                            <td>${formatNumber(tx.quantity_stolen || 0)}</td>
+                            <td><a href="https://etherscan.io/tx/${tx.transaction_hash}" target="_blank">${tx.transaction_hash ? tx.transaction_hash.slice(0,10) + '...' : 'N/A'}</a></td>
+                        </tr>`;
+                    });
+                    content += '</tbody></table>';
+                } else {
+                    content += '<p>No ERC20 transactions found for this drainer.</p>';
+                }
+
+                content += '<h3 style="margin-top: 2rem;">NFT Transactions</h3>';
+                if (contractTxs && contractTxs.nft && contractTxs.nft.length > 0) {
+                     content += '<table><thead><tr><th>Timestamp</th><th>Collection</th><th>Token ID</th><th>Transaction Hash</th></tr></thead><tbody>';
+                    contractTxs.nft.forEach(tx => {
+                        content += `<tr>
+                            <td>${new Date(tx.timestamp).toLocaleString()}</td>
+                            <td>${tx.collection_name || 'Unknown Collection'}</td>
+                            <td>${tx.token_id || 'N/A'}</td>
+                            <td><a href="https://etherscan.io/tx/${tx.transaction_hash}" target="_blank">${tx.transaction_hash ? tx.transaction_hash.slice(0,10) + '...' : 'N/A'}</a></td>
+                        </tr>`;
+                    });
+                    content += '</tbody></table>';
+                } else {
+                    content += '<p>No NFT transactions found for this drainer.</p>';
+                }
+
+                modalBody.innerHTML = content;
+                document.getElementById('contract-detail-modal').style.display = 'flex';
+            }
+            
+            function setupEventListeners() {
+                // Search and Sort functionality for tables
+                document.getElementById('token-search').addEventListener('input', e => renderTokenTable(e.target.value));
+                document.getElementById('contract-search').addEventListener('input', e => renderContractTable(e.target.value));
+
+                document.querySelectorAll('.table-container thead').forEach(thead => {
+                    thead.addEventListener('click', e => {
+                        if (e.target.tagName !== 'TH') return;
+                        const tableId = e.target.closest('table').querySelector('tbody').id;
+                        const key = e.target.dataset.sort;
+                        const sortState = tableId === 'tokens-table-body' ? tokenSort : contractSort;
+                        
+                        sortState.asc = sortState.key === key ? !sortState.asc : false;
+                        sortState.key = key;
+
+                        if (tableId === 'tokens-table-body') {
+                           renderTokenTable(document.getElementById('token-search').value);
+                        } else {
+                           renderContractTable(document.getElementById('contract-search').value);
+                        }
+                    });
+                });
+
+                // Modal logic
+                document.getElementById('contracts-table-body').addEventListener('click', e => {
+                    const row = e.target.closest('.contract-row');
+                    if(row) showContractDetail(row.dataset.address);
+                });
+                const modal = document.getElementById('contract-detail-modal');
+                document.getElementById('close-modal-button').addEventListener('click', () => modal.style.display = 'none');
+                modal.addEventListener('click', e => { if (e.target === modal) modal.style.display = 'none'; });
+            }
+            
+            // --- CHARTING FUNCTIONS ---
+            function createDailyChart(dailyData) {
+                const labels = dailyData.map(d => d.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+                const ethData = dailyData.map(d => d.eth_stolen || 0);
+                const txData = dailyData.map(d => d.transactions || 0);
+
+                return {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [
+                            {
+                                label: 'ETH Stolen', data: ethData, borderColor: '#3B7CF5',
+                                backgroundColor: 'rgba(59, 124, 245, 0.2)', yAxisID: 'y',
+                                borderWidth: 2, fill: true, tension: 0.4, pointRadius: 0
+                            },
+                            {
+                                label: 'Transactions', data: txData, borderColor: '#00B383',
+                                backgroundColor: 'rgba(0, 179, 131, 0.2)', yAxisID: 'y1',
+                                borderWidth: 2, fill: true, tension: 0.4, pointRadius: 0
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true, maintainAspectRatio: false,
+                        plugins: { legend: { labels: { color: '#EFEFF0' } }, title: { display: true, text: 'Daily Activity (ETH Stolen vs Transactions)', color: '#EFEFF0', font: {size: 16} } },
+                        scales: {
+                            y: { type: 'linear', position: 'left', title: { display: true, text: 'ETH Stolen', color: '#3B7CF5' }, grid: { color: '#2E2E2F' }, ticks: { color: '#8A8A8C' } },
+                            y1: { type: 'linear', position: 'right', title: { display: true, text: 'Transactions', color: '#00B383' }, grid: { drawOnChartArea: false }, ticks: { color: '#8A8A8C' } },
+                            x: { grid: { display: false }, ticks: { color: '#8A8A8C' } }
+                        }
+                    }
+                };
+            }
+
+            function createBarChart(labels, data, title, colorKey) {
+                 const chartColors = { 'chart-1': '#3B7CF5', 'chart-2': '#00B383' };
+                return {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{ label: 'Transactions', data: data, backgroundColor: chartColors[colorKey] }]
+                    },
+                    options: {
+                        responsive: true, maintainAspectRatio: false,
+                        plugins: { legend: { display: false }, title: { display: true, text: title, color: '#EFEFF0', font: {size: 14} } },
+                        scales: {
+                            y: { beginAtZero: true, grid: { color: '#2E2E2F' }, ticks: { color: '#8A8A8C' } },
+                            x: { grid: { display: false }, ticks: { color: '#8A8A8C' } }
+                        }
+                    }
+                };
+            }
+
+            init();
+        });
+        
+    </script>
+</body>
+</html>
